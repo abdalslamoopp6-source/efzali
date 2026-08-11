@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">افزع لي</string>
+    <string name="title_activity_main">افزع لي</string>
+    <string name="package_name">com.efzali.app</string>
+    <string name="custom_url_scheme">com.efzali.app</string>
+</resources>
