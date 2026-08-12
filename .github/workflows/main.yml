@@ -11,25 +11,38 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
 
     - name: Set up Java
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Find and Build Android
+    - name: Find Project Root & Install Dependencies
       run: |
-        # البحث عن المجلد الذي يحتوي على gradlew وتشغيل البناء داخله
-        GRADLE_DIR=$(find . -name "gradlew" -exec dirname {} \;)
-        echo "Found gradle project in: $GRADLE_DIR"
-        cd "$GRADLE_DIR"
+        PKG_DIR=$(find . -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \; | head -n 1)
+        echo "Project root found at: $PKG_DIR"
+        cd "$PKG_DIR"
+        npm install
+        npm run build --if-present
+
+        npx cap add android || true
+        npx cap copy android || true
+        npx cap sync android || true
+
+        CD_ANDROID=$(find . -maxdepth 3 -name "gradlew" -exec dirname {} \; | head -n 1)
+        cd "$CD_ANDROID"
         chmod +x gradlew
         ./gradlew assembleDebug
 
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: app-debug.apk
+        name: app-debug
         path: "**/app/build/outputs/apk/debug/app-debug.apk"
