@@ -19,26 +19,17 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Unzip project if uploaded as zip
+    - name: Find and Build Android
       run: |
-        if ls *.zip 1> /dev/null 2>&1; then
-          unzip -o *.zip
-        fi
-
-    - name: Make gradlew executable
-      run: |
-        if [ -d "android" ]; then
-          cd android && chmod +x gradlew
-        fi
-
-    - name: Build Android APK
-      run: |
-        if [ -d "android" ]; then
-          cd android && ./gradlew assembleDebug
-        fi
+        # البحث عن المجلد الذي يحتوي على gradlew وتشغيل البناء داخله
+        GRADLE_DIR=$(find . -name "gradlew" -exec dirname {} \;)
+        echo "Found gradle project in: $GRADLE_DIR"
+        cd "$GRADLE_DIR"
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
         name: app-debug.apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        path: "**/app/build/outputs/apk/debug/app-debug.apk"
